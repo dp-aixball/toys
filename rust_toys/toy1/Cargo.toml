@@ -1,0 +1,22 @@
+[package]
+name = "toy1"
+version = "0.1.0"
+authors = ["noname"]
+edition = "2018"
+publish = false
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[features]
+canvas = []
+
+[dependencies]
+iced = { path = "../../../../Git/iced", features = ["canvas", "async-std", "debug"] }
+iced_native = { path = "../../../../Git/iced/native" }
+chrono = "0.4"
+async-std = { version = "1.0", features = ["unstable"] }
+find_folder = "0.3.0"
+hound = "3.4.0"
+portaudio = "0.7.0"
+sample = "0.10.0"
+#iced = "0.1.0-beta"
