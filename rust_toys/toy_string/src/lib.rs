@@ -1,4 +1,14 @@
+extern crate libc;
 use std::collections::HashSet;
+use std::ffi::CString;
+use libc::c_char;
+use std::ffi::CStr;
+use log::*;
+
+//extern crate log;
+
+//mod ffi;
+
 #[derive(Default,Debug)] //(Debug是为了方便打印） {:?}
 struct LongText {
     pub text: String,
@@ -25,7 +35,25 @@ impl LongText {
     }
 }
 
-fn long_text_split(strs:String,delims:String,second_delims:String,max_sub_wcount:usize) -> Vec<String> {
+#[no_mangle]
+pub extern fn long_text_split_ffi(strs: *const c_char, delims: *const c_char, second_delims: *const c_char, max_sub_wcount: usize) -> Vec<String> {
+    info!("long_text_split_ffi...");
+    let c_str: &CStr = unsafe { CStr::from_ptr(strs) };
+    let str_slice: &str = c_str.to_str().unwrap();
+    let str_buf: String = str_slice.to_owned();  // if necessary
+
+    let c_str: &CStr = unsafe { CStr::from_ptr(delims) };
+    let str_slice: &str = c_str.to_str().unwrap();
+    let str_buf1: String = str_slice.to_owned();  // if necessary
+
+    let c_str: &CStr = unsafe { CStr::from_ptr(second_delims) };
+    let str_slice: &str = c_str.to_str().unwrap();
+    let str_buf2: String = str_slice.to_owned();  // if necessary
+    return long_text_split(str_buf, str_buf1, str_buf2, max_sub_wcount);
+}
+
+pub fn long_text_split(strs: String, delims: String, second_delims: String, max_sub_wcount: usize) -> Vec<String> {
+    info!("long_text_split...");
     let mut sents: Vec<String> = Vec::new();
 //    let mut sent: String = String::new();
     let mut delims_set: HashSet<char> = HashSet::new();
@@ -40,8 +68,9 @@ fn long_text_split(strs:String,delims:String,second_delims:String,max_sub_wcount
     for c in second_delims.chars() {
         second_delims_set.insert(c);
     }
+    let UNINIT_I = 99999999usize;
     let mut start = 0usize;
-    let mut last_second_delim = 999999usize;
+    let mut last_second_delim = UNINIT_I;
     let mut i = 0usize;
 //    let chars = strs.chars();
     for c in &vec_chars {
@@ -49,7 +78,7 @@ fn long_text_split(strs:String,delims:String,second_delims:String,max_sub_wcount
             last_second_delim = i;
         }
         if i - start > max_sub_wcount {
-            if 999999 != last_second_delim {
+            if UNINIT_I != last_second_delim {
                 let mut sent = String::new();
                 for subi in start..last_second_delim + 1 {
                     sent.push(vec_chars[subi]);
@@ -57,7 +86,7 @@ fn long_text_split(strs:String,delims:String,second_delims:String,max_sub_wcount
                 sents.push(sent);
                 start = last_second_delim + 1;
             }
-            last_second_delim = 999999;
+            last_second_delim = UNINIT_I;
         }
         if delims_set.contains(&c) {
             let mut sent = String::new();
@@ -80,5 +109,6 @@ fn long_text_split(strs:String,delims:String,second_delims:String,max_sub_wcount
         }
     }
     */
+    info!("DONE {}", &sents.len());
     return sents;
 }
